@@ -1,14 +1,16 @@
 from psychoapp.bot_button_listeners import *
-from psychoapp.constants.text_constants import ADMIN_TEXT, START_TEXT, SUPPORT_TEXT
+from psychoapp.constants.text_constants import ADMIN_TEXT, START_TEXT, SUPPORT_TEXT, WELCOME_TEXT
 from psychoapp.constants.keyboard_constants import START_KEYBOARD, WELCOME_KEYBOARD, SUPPORT_KEYBOARD
+from telegram import ReplyKeyboardRemove
 
 
 def start(update, context):
     ReplyKeyboardRemove()
+    print('chat_id:', update.message.chat_id)
     try:
         clear(update.message.from_user.id)
     except Exception as e:
-        print(e)
+        print('залупа с редисом')
     admin_contact(update, context)
     context.bot.send_message(update.message.chat_id, START_TEXT, parse_mode='html', reply_markup=START_KEYBOARD)
 
@@ -37,7 +39,7 @@ def admin_contact(update, context):
     try:
         update.callback_query.message.reply_text(ADMIN_TEXT, parse_mode='html')
     except:
-        context.bot.send_message(update.pre_checkout_query.from_user.id, ADMIN_TEXT, parse_mode='html')
+        context.bot.send_message(update.message.chat_id, ADMIN_TEXT, parse_mode='html')
 
 
 def help_command(update, _):

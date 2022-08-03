@@ -1,14 +1,17 @@
+from psychoapp.checks import client_have_tariff, client_already_have_this_meet
 from psychoapp.management.commands.bot import *
 from psychoapp.payment import get_payment_info
+from psychoapp.commands import *
 from psychoapp.constants.text_constants import *
 from psychoapp.client.client_data_setters import select_psycho, set_client_tariff
 from psychoapp.client_data_vizualizators import show_schedule, show_client_meets
 from psychoapp.client_getters import get_amount_client_tariff_meets, get_amount_client_meets
 from psychoapp.client.client_data_setters import set_client_meet
 from psychoapp.payment import pay
+from telegram import Update, CallbackQuery
 
 
-def text_listener(update: Update, context: CallbackContext):
+def text_listener(update: Update, context: CallbackQuery):
     tariff_selection = ['Пробное занятие', '1 сеанс в неделю',  '3 сеанса в неделю',  'Свой вариант']
     states = {
         START_BUTTON_TEXT: welcome,
@@ -27,7 +30,7 @@ def text_listener(update: Update, context: CallbackContext):
         states[update.message.text](update, context)
 
 
-def inline_button_listener(update: Update, context: CallbackContext):
+def inline_button_listener(update: Update, context: CallbackQuery):
     query_data = eval(update.callback_query.data)
     if 'show_schedule' in query_data:
         show_schedule(update, context, query_data['show_schedule'])
