@@ -25,7 +25,7 @@ class Command(BaseCommand):
         app.add_handler(CommandHandler('start', start))
         app.add_handler(CommandHandler('welcome', welcome))
         app.add_handler(CommandHandler('select_psycho', select_psycho))
-        app.add_handler(CommandHandler('select_tariff',     select_tariff))
+        app.add_handler(CommandHandler('select_tariff', select_tariff))
         app.add_handler(CommandHandler('show_schedule', show_schedule))
         app.add_handler(CommandHandler('pay', pay))
         app.add_handler(CommandHandler('support', support))
