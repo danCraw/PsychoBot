@@ -1,5 +1,5 @@
 from psychoapp.bot_button_listeners import *
-from psychoapp.constants.text_constants import ADMIN_TEXT, START_TEXT, SUPPORT_TEXT, WELCOME_TEXT
+from psychoapp.constants.text_constants import ADMIN_TEXT, START_TEXT, SUPPORT_TEXT, WELCOME_TEXT, EXPLAIN_TEXT
 from psychoapp.constants.keyboard_constants import START_KEYBOARD, WELCOME_KEYBOARD, SUPPORT_KEYBOARD
 from telegram import ReplyKeyboardRemove
 
