@@ -6,3 +6,4 @@ telegram==0.0.1
 redis==4.3.4
 python-telegram-bot==13.13
 Pillow==9.2.0
+dj_database_url
