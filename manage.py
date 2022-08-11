@@ -2,6 +2,8 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from django.core.management import call_command
+
 
 
 def main():
@@ -15,6 +17,12 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+    # print('аргументы', sys.argv)
+    # print('аргументы', ['manage.py', 'runserver', 'bot'])
+    # execute_from_command_line(['manage.py', 'runserver'])
+    # execute_from_command_line(['manage.py', 'bot'])
+    # call_command('runserver')
+    # call_command('bot')
     execute_from_command_line(sys.argv)
 
 

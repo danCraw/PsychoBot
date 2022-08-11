@@ -1,2 +1,1 @@
-web: python manage.py runserver
-web: python manage.py bot
+web: gunicorn psychobot.wsgi --log-file -
