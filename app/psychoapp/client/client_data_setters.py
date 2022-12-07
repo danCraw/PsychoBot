@@ -4,7 +4,7 @@ from telegram import ReplyKeyboardRemove, Update, InlineKeyboardMarkup, InlineKe
 from telegram.ext import CallbackContext
 
 from psychoapp.all_constants import redis, REDIS_TEMP_TIMEOUT
-from psychoapp.checks import client_exist
+from app.psychoapp.checks import client_exist
 from psychoapp.client_getters import get_client
 from psychoapp.constants.keyboard_constants import SELECT_TARIFF_KEYBOARD
 from psychoapp.models import Tariff, Client, Meet, Psychologist

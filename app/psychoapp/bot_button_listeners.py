@@ -1,4 +1,4 @@
-from psychoapp.checks import client_have_tariff, client_already_have_this_meet
+from app.psychoapp.checks import client_have_tariff, client_already_have_this_meet
 from psychoapp.management.commands.bot import *
 from psychoapp.payment import get_payment_info
 from psychoapp.commands import *

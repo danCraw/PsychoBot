@@ -3,14 +3,13 @@ from telegram import Bot
 from telegram.ext import CommandHandler, Updater, CallbackQueryHandler, PreCheckoutQueryHandler, MessageHandler, Filters
 from telegram.utils.request import Request
 
-from psychoapp.bot_button_listeners import *
+from app.psychoapp.bot_button_listeners import *
 from psychoapp.client.client_data_setters import *
-from psychoapp.client_data_vizualizators import show_schedule, show_client_meets, show_client_psycho
+from psychoapp.client_data_vizualizators import show_schedule
 from psychoapp.commands import *
 from psychoapp.constants.text_constants import *
 from psychoapp.payment import pay, payment_callback
-from psychoapp.redis_operations import save_client_from_redis_to_db, save_client_meets_from_redis_to_db
-from psychobot import settings
+from app.psychobot import settings
 
 
 class Command(BaseCommand):

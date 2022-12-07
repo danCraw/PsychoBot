@@ -5,7 +5,7 @@ from telegram import Update, ReplyKeyboardRemove, LabeledPrice
 
 from config import YOTOKEN
 from psychoapp.all_constants import redis
-from psychoapp.checks import client_exist
+from app.psychoapp.checks import client_exist
 from psychoapp.client_data_vizualizators import show_client_meets, show_client_psycho
 from psychoapp.client_getters import get_client
 from psychoapp.classes import PaymentInfo
