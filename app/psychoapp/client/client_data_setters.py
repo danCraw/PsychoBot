@@ -1,20 +1,20 @@
 import pickle
 
+from psychoapp.all_constants import redis, REDIS_TEMP_TIMEOUT
+from psychoapp.checks import client_exist
+from psychoapp.client.client_getters import get_client
+from psychoapp.constants.keyboard_constants import SELECT_TARIFF_KEYBOARD
+from psychoapp.constants.text_constants import SELECT_SCHEDULE_BUTTON_BUTTON_TEXT
+from psychoapp.models import Tariff, Client, Meet, Psychologist
+# from psychoapp.redis_operatios import add_client_to_redis
 from telegram import ReplyKeyboardRemove, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext
-
-from psychoapp.all_constants import redis, REDIS_TEMP_TIMEOUT
-from app.psychoapp.checks import client_exist
-from psychoapp.client_getters import get_client
-from psychoapp.constants.keyboard_constants import SELECT_TARIFF_KEYBOARD
-from psychoapp.models import Tariff, Client, Meet, Psychologist
-from psychoapp.redis_operations import add_client_to_redis
 
 
 def select_psycho(update: Update, callback: CallbackContext):
     ReplyKeyboardRemove()
     psychologists = Psychologist.objects.all().order_by("id")
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Узнать расписание", resize_keyboard=True)]])
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(SELECT_SCHEDULE_BUTTON_BUTTON_TEXT, resize_keyboard=True)]])
     for p in psychologists:
         for k in reply_markup.inline_keyboard:
             k[0].callback_data = str({'show_schedule': {'psycho_id': p.id, 'psycho_name': p.name}})
@@ -28,7 +28,7 @@ def select_psycho(update: Update, callback: CallbackContext):
 
 def select_tariff(chat_id, context):
     ReplyKeyboardRemove()
-    context.bot.send_message(chat_id, SELECT_TARIFF_KEYBOARD, parse_mode='html', reply_markup=SELECT_TARIFF_KEYBOARD)
+    context.bot.send_message(chat_id, SELECT_TARIFF_KEYBOARD, parse_mode='html')
 
 
 def set_client_tariff(client_id, client_name, client_tariff):
@@ -39,7 +39,7 @@ def set_client_tariff(client_id, client_name, client_tariff):
         client.save()
         print(f'client {client_name} already created. Just updating tariff')
     else:
-        add_client_to_redis(client_id, client_name, client_tariff)
+        # add_client_to_redis(client_id, client_name, client_tariff)
         print(f'client {client_name} was saved in redis')
 
 

@@ -3,15 +3,17 @@ import pickle
 from telegram.ext import CallbackContext
 from telegram import Update, ReplyKeyboardRemove, LabeledPrice
 
-from config import YOTOKEN
+
 from psychoapp.all_constants import redis
-from app.psychoapp.checks import client_exist
-from psychoapp.client_data_vizualizators import show_client_meets, show_client_psycho
-from psychoapp.client_getters import get_client
+from psychoapp.checks import client_exist
+from psychoapp.client.client_data_vizualizators import show_client_meets, show_client_psycho
+from psychoapp.client.client_getters import get_client
 from psychoapp.classes import PaymentInfo
 from psychoapp.commands import admin_contact
 from psychoapp.constants.text_constants import SUCCESSFUL_RECORDING_TEXT
 from psychoapp.redis_operations import save_client_from_redis_to_db, save_client_meets_from_redis_to_db
+
+from config.settings import YOTOKEN
 
 
 def pay(update: Update, context: CallbackContext, payment_info: PaymentInfo):

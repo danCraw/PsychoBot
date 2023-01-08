@@ -1,3 +1,4 @@
+import telebot as telebot
 from beaker.ext.database import types
 
 import config

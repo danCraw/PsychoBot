@@ -25,7 +25,10 @@ def client_exist(client_id: int):
 
 
 def client_have_tariff(client_id) -> bool:
-    if redis.get(client_id) or Client.objects.get(tg_id=client_id):
-        return True
+    try:
+        if redis.get(client_id) or Client.objects.get(tg_id=client_id):
+            return True
+    except Exception as e:
+        print(e)
     else:
         return False

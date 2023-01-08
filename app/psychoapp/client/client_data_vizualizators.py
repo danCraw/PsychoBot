@@ -5,7 +5,7 @@ from telegram import ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMa
 from psychoapp.all_constants import redis
 from psychoapp.constants.keyboard_constants import SELECT_TARIFF_KEYBOARD
 from psychoapp.models import Schedule, Meet
-from psychoapp.client_getters import get_client_psycho_tg_link
+from psychoapp.client.client_getters import get_client_psycho_tg_link
 
 
 def show_client_meets(chat_id, callback, client_id):
@@ -16,9 +16,18 @@ def show_client_meets(chat_id, callback, client_id):
         callback.bot.send_message(chat_id, f"{m.day_of_the_week.day_of_the_week}\n{m.time_start.strftime('%H:%M')}-{m.time_end.strftime('%H:%M')}")
 
 
-def show_client_psycho(update, context, client_id):
-    context.bot.send_message(chat_id=update.pre_checkout_query.from_user.id,
-                             text=f'Ваш психолог {get_client_psycho_tg_link(client_id)}', parse_mode='html')
+def show_client_base_meets(update, callback):
+    chat_id = update.message.chat_id
+    meets = redis.smembers((str(chat_id) + '_meets'))
+    callback.bot.send_message(chat_id, 'Ваши сеансы:')
+    for m in meets:
+        m = pickle.loads(m)
+        callback.bot.send_message(chat_id, f"{m.day_of_the_week.day_of_the_week}\n{m.time_start.strftime('%H:%M')}-{m.time_end.strftime('%H:%M')}")
+
+
+def show_client_psycho(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text=f'Ваш психолог {get_client_psycho_tg_link(update.message.chat_id)}', parse_mode='html')
 
 
 def show_schedule(update, context, psycho_info):

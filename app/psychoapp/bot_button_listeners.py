@@ -1,14 +1,13 @@
-from app.psychoapp.checks import client_have_tariff, client_already_have_this_meet
-from psychoapp.management.commands.bot import *
-from psychoapp.payment import get_payment_info
-from psychoapp.commands import *
-from psychoapp.constants.text_constants import *
-from psychoapp.client.client_data_setters import select_psycho, set_client_tariff
-from psychoapp.client_data_vizualizators import show_schedule, show_client_meets
-from psychoapp.client_getters import get_amount_client_tariff_meets, get_amount_client_meets
-from psychoapp.client.client_data_setters import set_client_meet
-from psychoapp.payment import pay
 from telegram import Update, CallbackQuery
+
+from psychoapp.checks import client_have_tariff, client_already_have_this_meet
+from psychoapp.client.client_data_setters import select_tariff, set_client_meet, select_psycho, set_client_tariff
+from psychoapp.client.client_data_vizualizators import show_schedule, show_client_meets
+from psychoapp.client.client_getters import get_amount_client_meets, get_amount_client_tariff_meets
+from psychoapp.commands import welcome, admin_contact
+from psychoapp.constants.text_constants import START_BUTTON_TEXT, SELECT_PSYCHO_BUTTON_TEXT, \
+    SELECT_SCHEDULE_BUTTON_BUTTON_TEXT, SELECT_PSYCHO_AGAIN_BUTTON_TEXT, ADMIN_BUTTON_TEXT, MY_MEETS_BUTTON_TEXT
+from psychoapp.payment import get_payment_info, pay
 
 
 def text_listener(update: Update, context: CallbackQuery):

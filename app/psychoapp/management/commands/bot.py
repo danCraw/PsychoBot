@@ -1,15 +1,13 @@
+from config import settings
 from django.core.management import BaseCommand
+from psychoapp.bot_button_listeners import inline_button_listener, text_listener
+from psychoapp.client.client_data_setters import select_tariff, select_psycho
+from psychoapp.client.client_data_vizualizators import show_schedule, show_client_psycho, show_client_meets, show_client_base_meets
+from psychoapp.commands import support, help_command, welcome, start
+from psychoapp.payment import pay, payment_callback
 from telegram import Bot
 from telegram.ext import CommandHandler, Updater, CallbackQueryHandler, PreCheckoutQueryHandler, MessageHandler, Filters
 from telegram.utils.request import Request
-
-from app.psychoapp.bot_button_listeners import *
-from psychoapp.client.client_data_setters import *
-from psychoapp.client_data_vizualizators import show_schedule
-from psychoapp.commands import *
-from psychoapp.constants.text_constants import *
-from psychoapp.payment import pay, payment_callback
-from app.psychobot import settings
 
 
 class Command(BaseCommand):
@@ -26,6 +24,8 @@ class Command(BaseCommand):
         app.add_handler(CommandHandler('select_psycho', select_psycho))
         app.add_handler(CommandHandler('select_tariff', select_tariff))
         app.add_handler(CommandHandler('show_schedule', show_schedule))
+        app.add_handler(CommandHandler('psychologist', show_client_psycho))
+        app.add_handler(CommandHandler('meets', show_client_base_meets))
         app.add_handler(CommandHandler('pay', pay))
         app.add_handler(CommandHandler('support', support))
         app.add_handler(CommandHandler('help', help_command))

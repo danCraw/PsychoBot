@@ -1,6 +1,6 @@
 Beaker==1.11.0
 Pydantic
-psycopg2
+psycopg2-binary
 Django==4.0.6
 telegram==0.0.1
 redis==4.3.4

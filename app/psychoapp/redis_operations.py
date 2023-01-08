@@ -1,7 +1,7 @@
 import pickle
 
 from psychoapp.all_constants import redis
-from psychoapp.client_getters import get_client
+from psychoapp.client.client_getters import get_client
 from psychoapp.models import Client, Meet
 
 
