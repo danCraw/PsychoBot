@@ -18,7 +18,7 @@ def get_db() -> databases.Database:
 
 def get_redis() -> aioredis.Redis:
     redis_url = config.REDIS_URL
-    return aioredis.Redis()
+    return aioredis.Redis(decode_responses=True)
 
 
 redis = get_redis()

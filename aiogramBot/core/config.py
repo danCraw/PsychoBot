@@ -26,6 +26,7 @@ class GlobalConfig(BaseSettings):
     DB_FORCE_ROLL_BACK: bool = False
     # Redis config
     REDIS_URL = 'redis://localhost'
+    EXPIRE_TIME = 300
     # text const
 
     ADMIN_TEXT = 'Администратор\nhttps://t.me//kirili13\nНомер телефона: 8 (999) 700-91-92'

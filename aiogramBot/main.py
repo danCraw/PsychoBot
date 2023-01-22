@@ -1,8 +1,10 @@
 import ast
+import json
 import logging
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
+from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, LabeledPrice
+from yookassa import Configuration, Payment
 
 from aiogramBot.bot.keyboards.inline import KB_SHOW_SCHEDULE
 from aiogramBot.bot.keyboards.reply import KB_START_BOT, KB_BEGIN
@@ -42,6 +44,58 @@ async def cmd_psychologists(message: types.Message):
 @dp.message_handler(commands=['tariffs'])
 async def cmd_tariffs(message: types.Message):
     await tariffs(message)
+
+
+
+
+
+@dp.message_handler(commands=['meets'])
+async def cmd_meets(message: types.Message):
+    await client_meets(message)
+
+
+def payment(value, description):
+    payment = Payment.create({
+        "amount": {
+            "value": value,
+            "currency": "RUB"
+        },
+        "payment_method_data": {
+            "type": "bank_card"
+        },
+        "confirmation": {
+            "type": "redirect",
+            "return_url": "урл редиректа"
+        },
+        "capture": True,
+        "description": description
+    })
+    return json.loads(payment.json())
+
+
+async def check_payment(payment_id):
+    payment = json.loads((Payment.find_one(payment_id)).json())
+    while payment['status'] == 'pending':
+        payment = json.loads((Payment.find_one(payment_id)).json())
+
+    if payment['status'] == 'succeeded':
+        print("SUCCSESS RETURN")
+        print(payment)
+        return True
+    else:
+        print("BAD RETURN")
+        print(payment)
+        return False
+
+
+@dp.message_handler(commands=['buy'])
+async def cmd_buy(message: types.Message):
+    payment_deatils = payment(100, 'Купить товар1')
+    await message.answer((payment_deatils['confirmation'])['confirmation_url'])
+    if await check_payment(payment_deatils['id']):
+        await message.answer("платеж")
+    else:
+        await message.answer("платеж не прошел")
 
 
 @dp.message_handler(regexp='Начать')
@@ -102,42 +156,99 @@ async def tariffs(message: types.Message):
     await message.answer('Выберете количество сеансов', reply_markup=kb_tariffs)
 
 
+async def client_meets(message: types.Message):
+    client_tg_id = message.chat.id
+    client_repo: ClientRepository = ClientRepository()
+    meets = await client_repo.get_temp_meets(client_tg_id)
+
+    message_text = 'Ваши сеансы:\n'
+    if not meets:
+        await message.answer('Вы ещё не назначили ни одного сеанса 😔')
+        return
+    for meet_id in meets:
+        await message.answer(message_text + (await generate_meet_text(meet_id)))
+
+
 @dp.callback_query_handler(regexp='set_meet')
 async def set_meet(call: types.CallbackQuery):
+    async def _select_meets():
+        if not await client_repo.have_enough_meets(client_tg_id):
+            await client_repo.set_temp_meets(client_tg_id, meet_id)
+            await call.message.answer('Вы назначили сеанс:' + await generate_meet_text(meet_id))
+        else:
+            await call.message.answer('Вы выбрали необходимое количество сеансов')
+            await client_meets(call.message)
+
+            payment_deatils = payment.payment(100, 'Купить товар1')
+            await call.message.answer((payment_deatils['confirmation'])['confirmation_url'])
+            if await payment.check_payment(payment_deatils['id']):
+                call.message.answer("платеж")
+
+            else:
+                call.message.answer("платеж не прошел")
     client_tg_id = call.message.chat.id
     client_repo: ClientRepository = ClientRepository()
+    meet_data = ast.literal_eval(call.data)['set_meet']
+    meet_id = meet_data['meet_id']
     if await client_repo.get(client_tg_id):
-        await call.message.answer('Вы уже оплатили выбранное время 😊.\nВ случае ошибки, пожалуйста, свяжитесь с администратором.\n' + config.ADMIN_TEXT)
+        await call.message.answer(
+            'Вы уже оплатили выбранное время 😊.\nВ случае ошибки, пожалуйста, свяжитесь с администратором.\n' + config.ADMIN_TEXT)
         return
-    if await client_repo.have_tariff(client_tg_id):
-        pass
+    if await client_repo.have_temp_tariff(client_tg_id):
+        await _select_meets()
     else:
         await call.message.answer('Пожалуйста, для начала выберите желаемое количество сеансов 😌')
 
 
 @dp.callback_query_handler(regexp='set_tariff')
 async def set_tariff(call: types.CallbackQuery):
+    async def _change_temp_tariff():
+        temp_tariff = await tariffs_repo.get(temp_tariff_id)
+        if temp_tariff.meets != selected_tariff.meets:
+            await client_repo.set_temp_tariff(client_tg_id, selected_tariff_name)
+            await call.message.answer('Количество сеансов изменено на ' + str(selected_tariff.meets))
+            if await client_repo.have_temp_meets(client_tg_id):
+                await client_repo.delete_temp_meets(client_tg_id)
+                await call.message.answer('Все назначенные встречи удалены')
+
+    async def _set_new_temp_tariff():
+        await client_repo.set_temp_tariff(client_tg_id, selected_tariff_name)
+        await call.message.answer('Выбраное количество сеансов ' + str(selected_tariff.meets))
+
     client_tg_id = call.message.chat.id
     client_repo: ClientRepository = ClientRepository()
     if await client_repo.get(client_tg_id):
-        await call.message.answer('Вы уже оплатили выбранное количество встреч 😊.\nВ случае ошибки, пожалуйста, свяжитесь с администратором.\n' + config.ADMIN_TEXT)
+        await call.message.answer(
+            'Вы уже оплатили выбранное количество встреч 😊.\nВ случае ошибки, пожалуйста, свяжитесь с администратором.\n' + config.ADMIN_TEXT)
         return
-    tariff_data = ast.literal_eval(call.data)['set_tariff']
-    tariff_name = tariff_data['name']
+    selected_tariff_data = ast.literal_eval(call.data)['set_tariff']
+    selected_tariff_name = selected_tariff_data['name']
     tariffs_repo: TariffRepository = TariffRepository()
-    tariff = await tariffs_repo.get(tariff_name)
-    await client_repo.set_temp_tariff(client_tg_id, tariff_name)
-    if await client_repo.have_tariff(client_tg_id):
-        await call.message.answer('Количество сеансов изменено на ' + str(tariff.meets))
+    selected_tariff = await tariffs_repo.get(selected_tariff_name)
+    temp_tariff_id = await client_repo.get_temp_tariff_id(client_tg_id)
+    if temp_tariff_id:
+        await _change_temp_tariff()
     else:
-        await call.message.answer('Выбраное количество сеансов ' + str(tariff.meets))
-    await call.message.answer('Если вас всё устраивает, переходите к выбору удобного вам времени')
+        await _set_new_temp_tariff()
+    await call.message.answer(
+        'Вы выбрали: ' + selected_tariff.name + '\nЕсли вас всё устраивает, переходите к выбору удобного вам времени у понраввившегося психолога')
 
 
 @dp.message_handler()
 async def undefined(message: types.Message):
     await message.answer(
         'Я не знаю такой команды 🙁. \nОбратитесь к администратору или воспользуйтесь списком команд из меню')
+
+
+# utils
+
+async def generate_meet_text(meet_id: int):
+    meet_repo: MeetRepository = MeetRepository()
+    schedule_repo: ScheduleRepository = ScheduleRepository()
+    meet = await meet_repo.get(int(meet_id))
+    day = await schedule_repo.get(meet.day_of_the_week_id)
+    time = (str(meet.time_start.strftime('%H:%M')) + '-' + str(meet.time_end.strftime('%H:%M')))
+    return day.day_of_the_week + ': ' + time
 
 
 if __name__ == '__main__':
