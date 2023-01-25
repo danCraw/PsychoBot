@@ -3,7 +3,8 @@ import json
 import logging
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, LabeledPrice
+from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, LabeledPrice, \
+    ContentType
 from yookassa import Configuration, Payment
 
 from aiogramBot.bot.keyboards.inline import KB_SHOW_SCHEDULE
@@ -46,57 +47,35 @@ async def cmd_tariffs(message: types.Message):
     await tariffs(message)
 
 
-
-
-
 @dp.message_handler(commands=['meets'])
 async def cmd_meets(message: types.Message):
     await client_meets(message)
 
 
-def payment(value, description):
-    payment = Payment.create({
-        "amount": {
-            "value": value,
-            "currency": "RUB"
-        },
-        "payment_method_data": {
-            "type": "bank_card"
-        },
-        "confirmation": {
-            "type": "redirect",
-            "return_url": "урл редиректа"
-        },
-        "capture": True,
-        "description": description
-    })
-    return json.loads(payment.json())
+async def payment(chat_id: int, psychologist_name: str, amount_meets: int, price: int):
+    await bot.send_invoice(chat_id=chat_id,
+                           title='Оплата',
+                           description=f'Психолог, ' + psychologist_name + ' количество сеансов: ' + str(amount_meets),
+                           payload='payed',
+                           provider_token=config.YOTOKEN,
+                           currency='RUB',
+                           start_parameter='test',
+                           prices=[LabeledPrice(
+                               label='Руб',
+                               amount=price * 100)])
 
 
-async def check_payment(payment_id):
-    payment = json.loads((Payment.find_one(payment_id)).json())
-    while payment['status'] == 'pending':
-        payment = json.loads((Payment.find_one(payment_id)).json())
-
-    if payment['status'] == 'succeeded':
-        print("SUCCSESS RETURN")
-        print(payment)
-        return True
-    else:
-        print("BAD RETURN")
-        print(payment)
-        return False
+@dp.pre_checkout_query_handler()
+async def process_pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery):
+    await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
 
 
-@dp.message_handler(commands=['buy'])
-async def cmd_buy(message: types.Message):
-    payment_deatils = payment(100, 'Купить товар1')
-    await message.answer((payment_deatils['confirmation'])['confirmation_url'])
-    if await check_payment(payment_deatils['id']):
-        await message.answer("платеж")
-    else:
-        await message.answer("платеж не прошел")
+@dp.message_handler(content_types=ContentType.SUCCESSFUL_PAYMENT)
+async def process_pay(message: types.Message):
+    if message.successful_payment.invoice_payload == 'payed':
 
+        await message.answer('Психолог оплачен')
+        # await message.answer()
 
 @dp.message_handler(regexp='Начать')
 async def begin(message: types.Message):
@@ -114,8 +93,8 @@ async def psychologists(message: types.Message):
     await tariffs(message)
     await message.answer('Психологи', reply_markup=ReplyKeyboardRemove())
     for psychologist in psychologists:
-        KB_SHOW_SCHEDULE.inline_keyboard[0][0].callback_data = str(
-            {'schedule': {'id': psychologist.id, 'name': psychologist.name}})
+        strr = str({'schedule': {'id': psychologist.id, 'n': psychologist.name, 'p': psychologist.meet_price}})
+        KB_SHOW_SCHEDULE.inline_keyboard[0][0].callback_data = strr
         with open('../app/media/' + psychologist.photo, 'rb') as photo:
             await message.answer_photo(photo,
                                        caption='<b>' + psychologist.name + '. Возраст ' + str(
@@ -127,7 +106,7 @@ async def psychologists(message: types.Message):
 @dp.callback_query_handler(regexp='schedule')
 async def schedule(call: types.CallbackQuery):
     schedule_data = ast.literal_eval(call.data)['schedule']
-    psychologist_id, psychologist_name = schedule_data['id'], schedule_data['name']
+    psychologist_id, psychologist_name, psychologists_meet_price = schedule_data['id'], schedule_data['n'], schedule_data['p']
     schedule_repo: ScheduleRepository = ScheduleRepository()
     meet_repo: MeetRepository = MeetRepository()
     days_of_week = await schedule_repo.get_psychologist_schedule(psychologist_id)
@@ -139,7 +118,9 @@ async def schedule(call: types.CallbackQuery):
                 InlineKeyboardButton((str(meet.time_start.strftime('%H:%M')) + '-' + str(
                     meet.time_end.strftime('%H:%M'))),
                                      callback_data=str(
-                                         {'set_meet': {'meet_id': meet.id}}))
+                                         {'set_meet': {'m_id': meet.id,
+                                                       'p_n': psychologist_name,
+                                                       'p_p': psychologists_meet_price}}))
             )
         await call.message.answer('Расписание для психолога <b>' + psychologist_name + '</b> \n'
                                                                                        '<b>' + day.day_of_the_week + '</b>',
@@ -174,22 +155,19 @@ async def set_meet(call: types.CallbackQuery):
     async def _select_meets():
         if not await client_repo.have_enough_meets(client_tg_id):
             await client_repo.set_temp_meets(client_tg_id, meet_id)
-            await call.message.answer('Вы назначили сеанс:' + await generate_meet_text(meet_id))
+            await call.message.answer('Вы назначили сеанс: ' + await generate_meet_text(meet_id))
         else:
             await call.message.answer('Вы выбрали необходимое количество сеансов')
-            await client_meets(call.message)
+            await payment(call.message.chat.id,
+                          meet_data['p_n'],
+                          len(await client_repo.get_temp_meets(client_tg_id)),
+                          meet_data['p_p']
+                          )
 
-            payment_deatils = payment.payment(100, 'Купить товар1')
-            await call.message.answer((payment_deatils['confirmation'])['confirmation_url'])
-            if await payment.check_payment(payment_deatils['id']):
-                call.message.answer("платеж")
-
-            else:
-                call.message.answer("платеж не прошел")
     client_tg_id = call.message.chat.id
     client_repo: ClientRepository = ClientRepository()
     meet_data = ast.literal_eval(call.data)['set_meet']
-    meet_id = meet_data['meet_id']
+    meet_id = meet_data['m_id']
     if await client_repo.get(client_tg_id):
         await call.message.answer(
             'Вы уже оплатили выбранное время 😊.\nВ случае ошибки, пожалуйста, свяжитесь с администратором.\n' + config.ADMIN_TEXT)

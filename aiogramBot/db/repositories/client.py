@@ -67,7 +67,6 @@ class ClientRepository(BaseRepository):
         return await redis.get('tariff_' + str(tg_id))
 
     async def have_temp_meets(self, tg_id: int) -> bool:
-        client = await self.get(tg_id)
         return await redis.get('meets_' + str(tg_id))
 
     async def have_enough_meets(self, tg_id: int) -> bool:
@@ -83,3 +82,8 @@ class ClientRepository(BaseRepository):
 
     async def delete_temp_meets(self, tg_id: int):
         await redis.delete('meets_' + str(tg_id))
+
+    async def save_temp_data_to_db(self, tg_id: int):
+        meets = await redis.lrange('meets_' + str(tg_id), 1, -1)
+        client_tariff_id = await redis.get('tariff_' + str(tg_id))
+        self.update({'tariff_if': client_tariff_id, 'remaining_meets': len(meets)})
