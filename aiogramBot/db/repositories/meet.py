@@ -2,6 +2,7 @@ from typing import Type, List
 
 import sqlalchemy
 
+from aiogramBot.db.base import redis_conn
 from aiogramBot.db.repositories.base import BaseRepository
 from aiogramBot.db.tables.meet import Meet
 from aiogramBot.models.meet import MeetOut, MeetIn
@@ -21,5 +22,8 @@ class MeetRepository(BaseRepository):
         return MeetIn
 
     async def get_free_meets(self, day_of_the_week_id: int) -> List:
-        rows = await self._db.fetch_all(query=self._table.select().where(self._table.c.day_of_the_week_id == day_of_the_week_id and self._table.c.client_id == None))
+        selected_meets = await redis_conn.lrange('selected_meets', 1, -1)
+        rows = await self._db.fetch_all(query=self._table.select().where(self._table.c.day_of_the_week_id == day_of_the_week_id
+                                                                         and self._table.c.client_id is None
+                                                                         and self._table.c.id not in selected_meets))
         return [self._schema_out(**dict(dict(row).items())) for row in rows]
