@@ -21,7 +21,7 @@ def get_redis() -> aioredis.Redis:
     return aioredis.Redis(decode_responses=True)
 
 
-redis = get_redis()
+redis_conn = get_redis()
 database = get_db()
 Base = declarative_base()
 metadata = Base.metadata
