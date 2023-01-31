@@ -65,21 +65,21 @@ class ClientRepository(BaseRepository):
         return await redis_conn.get('psychologist_' + str(tg_id))
 
     async def set_temp_tariff(self, tg_id: int, tariff_name: str) -> None:
-        await redis_conn.set('tariff_' + str(tg_id), tariff_name)
+        await redis_conn.set('tariff_' + str(tg_id), tariff_name, ex=config.EXPIRE_TIME)
 
     async def set_temp_meets(self, tg_id: int, meet_id: int) -> None:
         meets = await redis_conn.lrange('meets_' + str(tg_id), 1, -1)
         if not meets:
             while not meets:
-                await redis_conn.rpush('meets_' + str(tg_id), meet_id)
-                meets = await redis_conn.lrange('meets_' + str(tg_id), 1, -1)
-                await redis_conn.rpush('selected_meets', meet_id)
+                await redis_conn.rpush('meets_' + str(tg_id), meet_id, ex=config.EXPIRE_TIME)
+                meets = await redis_conn.lrange('meets_' + str(tg_id), 1, -1, ex=config.EXPIRE_TIME)
+                await redis_conn.rpush('selected_meets', meet_id, ex=config.EXPIRE_TIME)
         else:
-            await redis_conn.rpush('meets_' + str(tg_id), meet_id)
-            await redis_conn.rpush('selected_meets', meet_id)
+            await redis_conn.rpush('meets_' + str(tg_id), meet_id, ex=config.EXPIRE_TIME)
+            await redis_conn.rpush('selected_meets', meet_id, ex=config.EXPIRE_TIME)
 
     async def set_temp_psychologist(self, tg_id, psychologist_link: str):
-        await redis_conn.set('psychologist_' + str(tg_id), psychologist_link)
+        await redis_conn.set('psychologist_' + str(tg_id), psychologist_link, ex=config.EXPIRE_TIME)
 
     async def have_temp_tariff(self, tg_id: int) -> bool:
         return await redis_conn.get('tariff_' + str(tg_id))
