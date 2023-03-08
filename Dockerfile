@@ -5,6 +5,7 @@ ENV PYTHONUNBUFFERED 1
 
 COPY ./requirements.txt /requirements.txt
 COPY ./app /app
+COPY ./aiogramBot /app/aiogramBot
 COPY ./scripts /scripts
 
 WORKDIR /app

@@ -1,5 +1,4 @@
 import ast
-import json
 import logging
 import os
 import sys
@@ -7,7 +6,7 @@ import sys
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, LabeledPrice, \
     ContentType
-from yookassa import Configuration, Payment
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT)
 
