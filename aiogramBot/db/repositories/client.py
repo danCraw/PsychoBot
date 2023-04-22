@@ -105,5 +105,7 @@ class ClientRepository(BaseRepository):
     async def save_temp_data_to_db(self, tg_id: int, username: str):
         meets = await redis_conn.lrange('meets_' + str(tg_id), 1, -1)
         client_tariff_id = await redis_conn.get('tariff_' + str(tg_id))
-        await self.create(ClientBase(tg_id=tg_id, name='@' + username, tariff_id=client_tariff_id, remaining_meets=len(meets)))
+        if not client_tariff_id:
+            return 422
+        await self.create(ClientBase(tg_id=tg_id, name=username, tariff_id=client_tariff_id, remaining_meets=len(meets)))
         await self.delete_temp_data(tg_id)

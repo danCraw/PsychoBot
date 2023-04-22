@@ -4,13 +4,12 @@ import os
 import sys
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, LabeledPrice, \
-    ContentType
+from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT)
 
-from aiogramBot.bot.keyboards.inline import KB_SHOW_SCHEDULE
+from aiogramBot.bot.keyboards.inline import KB_SELECT_PSYCHOLOGIST
 from aiogramBot.bot.keyboards.reply import KB_START_BOT, KB_BEGIN, KB_SELECT_PSYCHO
 from aiogramBot.core.app_events import start_app, stop_app
 from aiogramBot.core.config import config
@@ -55,32 +54,9 @@ async def cmd_meets(message: types.Message):
     await client_meets(message)
 
 
-async def payment(chat_id: int, psychologist_name: str, amount_meets: int, price: int, psychologist_tg_link: str):
-    await bot.send_invoice(chat_id=chat_id,
-                           title='Оплата',
-                           description=f'Психолог, ' + psychologist_name + ' количество сеансов: ' + str(amount_meets),
-                           payload='payed',
-                           provider_token=config.YOTOKEN,
-                           currency='RUB',
-                           start_parameter='test',
-                           prices=[LabeledPrice(
-                               label='Руб',
-                               amount=price * 100)])
-
-
 @dp.pre_checkout_query_handler()
 async def process_pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery):
     await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
-
-
-@dp.message_handler(content_types=ContentType.SUCCESSFUL_PAYMENT)
-async def process_pay(message: types.Message):
-    if message.successful_payment.invoice_payload == 'payed':
-        client_repo: ClientRepository = ClientRepository()
-        await client_repo.save_temp_data_to_db(message.chat.id, message.from_user.username)
-        psychologist_link = await client_repo.get_temp_psychologist(message.chat.id)
-        await message.answer('Психолог оплачен:\n' + psychologist_link)
-        await message.answer('Приятных вам бесед 😊')
 
 
 @dp.message_handler(regexp='Начать')
@@ -94,44 +70,31 @@ async def begin(message: types.Message):
 async def psychologists(message: types.Message):
     psychologist_repo: PsychologistRepository = PsychologistRepository()
     psychologists = await psychologist_repo.list()
-    await message.answer('Выберите психолога, желаемое количество сеансов и удобное для вас время 😉',
+    await message.answer('Выберите психолога, который наиболее вам подходит 😉',
                          reply_markup=ReplyKeyboardRemove())
     await message.answer('Психологи', reply_markup=ReplyKeyboardRemove())
     for psychologist in psychologists:
-        KB_SHOW_SCHEDULE.inline_keyboard[0][0].callback_data = str({'schedule': {'id': psychologist.id, 'n': psychologist.name, 'p': psychologist.meet_price}})
+        KB_SELECT_PSYCHOLOGIST.inline_keyboard[0][0].callback_data = str({'chosen': {'id': psychologist.id, 'n': psychologist.name, 'p': psychologist.meet_price}})
         with open('../app/media/' + psychologist.photo, 'rb') as photo:
             await message.answer_photo(photo,
                                        caption='<b>' + psychologist.name + '. Возраст ' + str(
                                            psychologist.age) + '. ' + str(psychologist.meet_price) + 'р за сеанс.</b>\n' + psychologist.description,
-                                       reply_markup=KB_SHOW_SCHEDULE)
+                                       reply_markup=KB_SELECT_PSYCHOLOGIST)
 
 
-@dp.callback_query_handler(regexp='schedule')
-async def schedule(call: types.CallbackQuery):
-    schedule_data = ast.literal_eval(call.data)['schedule']
-    psychologist_id, psychologist_name, psychologists_meet_price = schedule_data['id'], schedule_data['n'], schedule_data['p']
-    schedule_repo: ScheduleRepository = ScheduleRepository()
-    meet_repo: MeetRepository = MeetRepository()
-    days_of_week = await schedule_repo.get_psychologist_schedule(psychologist_id)
-    if not days_of_week:
-        await call.message.answer('В данный момент у выбранного вами психолога нет свободных мест в расписании 😞\n'
-                                  'Пожалуйста, выберите другого специалиста или свяжитесь с администратором, '
-                                  'чтобы он оповестил вас как только место освободится 😉')
-        return await call.message.answer(config.ADMIN_TEXT)
-    for day in days_of_week:
-        meets = await meet_repo.get_free_meets(day.id)
-        kb_day_schedule = InlineKeyboardMarkup(len(meets))
-        for meet in meets:
-            kb_day_schedule.add(
-                InlineKeyboardButton((str(meet.time_start.strftime('%H:%M')) + '-' + str(
-                    meet.time_end.strftime('%H:%M'))),
-                                     callback_data=str(
-                                         {'set_meet': {'m_id': meet.id,
-                                                       'p_id': psychologist_id}}))
-            )
-        await call.message.answer('Расписание для психолога <b>' + psychologist_name + '</b> \n'
-                                                                                       '<b>' + day.day_of_the_week + '</b>',
-                                  reply_markup=kb_day_schedule, parse_mode='html')
+@dp.callback_query_handler(regexp='chosen')
+async def save_user_request(call: types.CallbackQuery):
+    await call.message.answer('Ваша заявка сохранена, скоро с вами свяжется наш администратор 😊')
+    chosen_psychologist = ast.literal_eval(call.data)['chosen']
+    psychologist_id, psychologist_name, psychologists_meet_price = chosen_psychologist['id'], chosen_psychologist['n'],\
+                                                                   chosen_psychologist['p']
+    client_repo: ClientRepository = ClientRepository()
+    if await client_repo.save_temp_data_to_db(call.message.chat.id, call.message.chat.mention):
+        await bot.send_message(677000194, 'что-то пошло не так, пожалуйста, свяжитесь с администратором. ' + config.ADMIN_TEXT)
+    # ids = [792137742, 677000194]
+    ids = [677000194]
+    for id in ids:
+        await bot.send_message(id, f'@{call.message.chat.username} оставил заявку на запись к психологу id: {psychologist_id} name: {psychologist_name}')
 
 
 @dp.message_handler(regexp='Выбрать 🔎')
@@ -142,7 +105,7 @@ async def tariffs(message: types.Message):
     for tariff in tariffs:
         kb_tariffs.add(
             InlineKeyboardButton(tariff.name, callback_data=str({'set_tariff': {'name': tariff.name}})))
-    await message.answer('Выберете количество сеансов', reply_markup=kb_tariffs)
+    await message.answer('Выберете количество сеансов в неделю', reply_markup=kb_tariffs)
 
 
 async def client_meets(message: types.Message):
@@ -156,48 +119,6 @@ async def client_meets(message: types.Message):
         return
     for meet_id in meets:
         await message.answer(message_text + (await generate_meet_text(meet_id)))
-
-
-@dp.callback_query_handler(regexp='set_meet')
-async def set_meet(call: types.CallbackQuery):
-
-    async def _all_meets_selected():
-        await call.message.answer('Вы выбрали необходимое количество сеансов')
-        await client_repo.set_temp_psychologist(client_tg_id, psychologist.tg_link)
-        await payment(call.message.chat.id,
-                      psychologist.name,
-                      len(await client_repo.get_temp_meets(client_tg_id)),
-                      psychologist.meet_price*len(await client_repo.get_temp_meets(client_tg_id)),
-                      psychologist.tg_link,
-                      )
-
-    async def _select_meets():
-        pay_msg_sanded = False
-        if not await client_repo.have_enough_meets(client_tg_id):
-            await client_repo.set_temp_meets(client_tg_id, meet_id)
-            await call.message.answer('Вы назначили сеанс: ' + await generate_meet_text(meet_id))
-        else:
-            await _all_meets_selected()
-            pay_msg_sanded = True
-
-        if await client_repo.have_enough_meets(client_tg_id) and not pay_msg_sanded:
-            await _all_meets_selected()
-
-    client_tg_id = call.message.chat.id
-    client_repo: ClientRepository = ClientRepository()
-    psychologists_repo: PsychologistRepository = PsychologistRepository()
-    meet_data = ast.literal_eval(call.data)['set_meet']
-    psychologist_id = meet_data['p_id']
-    meet_id = meet_data['m_id']
-    psychologist = await psychologists_repo.get(psychologist_id)
-    if await client_repo.get(client_tg_id):
-        await call.message.answer(
-            'Вы уже оплатили выбранное время 😊.\nВ случае ошибки, пожалуйста, свяжитесь с администратором.\n' + config.ADMIN_TEXT)
-        return
-    if await client_repo.have_temp_tariff(client_tg_id):
-        await _select_meets()
-    else:
-        await call.message.answer('Пожалуйста, для начала выберите желаемое количество сеансов 😌')
 
 
 @dp.callback_query_handler(regexp='set_tariff')
@@ -219,7 +140,7 @@ async def set_tariff(call: types.CallbackQuery):
     client_repo: ClientRepository = ClientRepository()
     if await client_repo.get(client_tg_id):
         await call.message.answer(
-            'Вы уже оплатили выбранное количество встреч 😊.\nВ случае ошибки, пожалуйста, свяжитесь с администратором.\n' + config.ADMIN_TEXT)
+            'Вы уже оставляли заявку 😊.\nВ случае ошибки, пожалуйста, свяжитесь с администратором.\n' + config.ADMIN_TEXT)
         return
     selected_tariff_data = ast.literal_eval(call.data)['set_tariff']
     selected_tariff_name = selected_tariff_data['name']
@@ -231,7 +152,7 @@ async def set_tariff(call: types.CallbackQuery):
     else:
         await _set_new_temp_tariff()
     await call.message.answer(
-        'Вы выбрали: ' + selected_tariff.name + '\nЕсли вас всё устраивает, переходите к выбору удобного вам времени у понраввившегося психолога', reply_markup=KB_SELECT_PSYCHO)
+        'Вы выбрали: ' + selected_tariff.name + '\nЕсли вас всё устраивает, переходите к выбору психолога', reply_markup=KB_SELECT_PSYCHO)
 
 
 @dp.message_handler()
