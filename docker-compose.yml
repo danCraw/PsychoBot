@@ -22,25 +22,32 @@ services:
 #    depends_on:
 #      - db
 
-  db:
-    image: postgres:13-alpine
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_DB=config
-      - POSTGRES_USER=postgresql
-      - POSTGRES_PASSWORD=postgresql
-
-  bot:
+  rabbit:
     build:
-      context: .
-    command: >
-      sh -c "python3 ./aiogramBot/main.py"
+      context: rabbit
+      dockerfile: Dockerfile
     ports:
-      - 6432:6432
-    volumes:
-      - ./aiogramBot:/aiogramBot
-    environment:
-     - DATABASE_URL=postgresql://postgresql:postgresql@0.0.0.0:5432/config
-    depends_on:
-      - db
+      - "5672:5672"
+
+#  db:
+#    image: postgres:13-alpine
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      - POSTGRES_DB=config
+#      - POSTGRES_USER=postgresql
+#      - POSTGRES_PASSWORD=postgresql
+
+#  bot:
+#    build:
+#      context: .
+#    command: >
+#      sh -c "python3 ./aiogramBot/main.py"
+#    ports:
+#      - 6432:6432
+#    volumes:
+#      - ./aiogramBot:/aiogramBot
+#    environment:
+#     - DATABASE_URL=postgresql://postgresql:postgresql@0.0.0.0:5432/config
+#    depends_on:
+#      - db

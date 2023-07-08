@@ -20,7 +20,9 @@ class Psychologist(models.Model):
     description = models.TextField('о психологе', max_length=1000)
     photo = models.ImageField('путь к фото', max_length=100, default="")
     meet_price = models.IntegerField('стоимость сеанас Р', default=0)
+    average_score = models.IntegerField('Средняя оценка', default=0)
     likes = models.IntegerField('оценки нравится', default=0)
+    approved = models.BooleanField('содержание профиля проверено', default=False)
 
     def __str__(self):
         return str(self.name)
@@ -28,6 +30,18 @@ class Psychologist(models.Model):
     class Meta:
         verbose_name = 'Психолог'
         verbose_name_plural = 'Психологи'
+
+
+class Specialization(models.Model):
+    name = models.CharField('название специализации', max_length=30)
+    psychologists_specializations = models.ManyToManyField(Psychologist)
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = 'Специализация'
+        verbose_name_plural = 'Специализации'
 
 
 class Client(models.Model):

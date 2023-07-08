@@ -11,13 +11,13 @@ sys.path.append(ROOT)
 
 from aiogramBot.bot.keyboards.inline import KB_SELECT_PSYCHOLOGIST
 from aiogramBot.bot.keyboards.reply import KB_START_BOT, KB_BEGIN, KB_SELECT_PSYCHO
-from aiogramBot.core.app_events import start_app, stop_app
-from aiogramBot.core.config import config
-from aiogramBot.db.repositories.client import ClientRepository
-from aiogramBot.db.repositories.meet import MeetRepository
-from aiogramBot.db.repositories.psyhologists import PsychologistRepository
-from aiogramBot.db.repositories.schedule import ScheduleRepository
-from aiogramBot.db.repositories.tariff import TariffRepository
+from core.app_events import start_app, stop_app
+from core.config import config
+from db.repositories.client import ClientRepository
+from db.repositories.meet import MeetRepository
+from db.repositories.psychologists import PsychologistRepository
+from db.repositories.schedule import ScheduleRepository
+from db.repositories.tariff import TariffRepository
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -174,3 +174,4 @@ async def generate_meet_text(meet_id: int):
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True, on_startup=start_app, on_shutdown=stop_app)
+    dp.bot.send_message()

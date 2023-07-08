@@ -96,7 +96,7 @@ soupsieve==2.3.2.post1
 SQLAlchemy==1.4.46
 sqlparse==0.4.3
 telegram==0.0.1
-telebot
+telebot~=0.0.5
 urllib3==1.26.9
 virtualenv==20.20.0
 virtualenv-clone==0.3.0
@@ -109,3 +109,7 @@ xdg==5
 yarl==1.8.2
 yookassa==2.3.3
 zipp==1.0.0
+
+fastapi~=0.99.1
+aio_pika
+uvicorn~=0.22.0

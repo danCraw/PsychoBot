@@ -1,7 +1,7 @@
 from aiogram import Bot, Dispatcher
 from aiogram.types import ParseMode
 
-from aiogramBot.core.config import config
+from core.config import config
 
 
 def get_aiobot():
