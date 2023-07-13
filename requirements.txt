@@ -113,3 +113,4 @@ zipp==1.0.0
 fastapi~=0.99.1
 aio_pika
 uvicorn~=0.22.0
+dependency-injector

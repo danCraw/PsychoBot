@@ -23,7 +23,7 @@ class PsychologistRepository(BaseRepository):
     def _schema_in(self) -> Type[PsychologistIn]:
         return PsychologistIn
 
-    async def approved_psychologists(self, specializations_table: Specialization, psychologists_specializations_table: Psychologist_specialization) -> list[PsychologistOut]:
+    async def approved_psychologists(self, limit: int, offset: int, specializations_table: Specialization, psychologists_specializations_table: Psychologist_specialization) -> list[PsychologistOut]:
         rows = await self._db.fetch_all(
                         self._table.select()
                             .join(psychologists_specializations_table,
@@ -46,5 +46,7 @@ class PsychologistRepository(BaseRepository):
                                 func.array_remove(func.array_agg(specializations_table.c.name), None).label('specializations')
                             )
                         .group_by(self._table.c.id)
+                        .limit(limit)
+                        .offset(offset)
                     )
         return [self._schema_out(**dict(dict(row).items())) for row in rows] if rows else rows

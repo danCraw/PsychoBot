@@ -32,10 +32,11 @@ class GlobalConfig(BaseSettings):
     rabbit_host: str = 'localhost'
     rabbit_port: int = 5672
     rabbit_user: str = 'psycho'
-    rabbit_secret: str = 'SomEKey345'
+    rabbit_secret: str = 'password'
     rabbit_virtual_host: str = 'psycho'
     rabbit_prefetch_count: int = 100
     rabbit_tg_events_queue_name: str = 'tg_events'
+    routing_key = 'tg_events'
     # text const
 
     ADMIN_TEXT = 'Администратор\nhttps://t.me//kirili13\nНомер телефона: 8 (999) 700-91-92'

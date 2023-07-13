@@ -29,14 +29,14 @@ services:
     ports:
       - "5672:5672"
 
-#  db:
-#    image: postgres:13-alpine
-#    ports:
-#      - "5432:5432"
-#    environment:
-#      - POSTGRES_DB=config
-#      - POSTGRES_USER=postgresql
-#      - POSTGRES_PASSWORD=postgresql
+  db:
+    image: postgres:13-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=config
+      - POSTGRES_USER=postgresql
+      - POSTGRES_PASSWORD=postgresql
 
 #  bot:
 #    build:

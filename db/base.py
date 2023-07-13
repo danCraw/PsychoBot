@@ -1,3 +1,5 @@
+import types
+
 import databases
 from sqlalchemy.ext.declarative import declarative_base
 import aioredis
@@ -22,11 +24,25 @@ def get_redis() -> aioredis.Redis:
     return aioredis.Redis(decode_responses=True)
 
 
-def get_rabbit():
-    return
+async def connect_rabbit():
+    rabbit.connection = await aio_pika.connect_robust("amqp://{user}:{password}@{host}:{port}/{vhost}".format(
+        user=config.rabbit_user,
+        password=config.rabbit_secret,
+        host=config.rabbit_host,
+        port=config.rabbit_port,
+        vhost=config.rabbit_virtual_host
+    ))
 
+    channel = await rabbit.connection.channel()
+    await channel.set_qos(
+        prefetch_count=config.rabbit_prefetch_count  # MAX messages to process at the same time
+    )
+    queue = await channel.declare_queue(config.rabbit_tg_events_queue_name, auto_delete=False)
 
-rabbit_conn = get_rabbit()
+    rabbit.connection = await rabbit.connection.channel()
+    rabbit.queue = queue
+
+rabbit = types.SimpleNamespace(connection=None, exchange=None, queue=None)
 redis_conn = get_redis()
 database = get_db()
 Base = declarative_base()

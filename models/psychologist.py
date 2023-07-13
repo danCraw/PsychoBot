@@ -27,3 +27,8 @@ class ChoosePsychologist(BaseSchema):
     psychologist_id: int
     phone_number: Optional[str]
     tg_link: Optional[str]
+
+
+class PsychologistsList(BaseSchema):
+    amount: int
+    start: int
