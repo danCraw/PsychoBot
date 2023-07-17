@@ -75,17 +75,11 @@ async def update_psychologist(psychologist: PsychologistIn, psychologist_repo: P
 @inject
 async def choose_psychologist(choose_psychologist: ChoosePsychologist, psychologist_repo: PsychologistRepository = Depends(
                               Provide[Container.psychologists])) -> List[PsychologistOut]:
-    await rabbit.connection.default_exchange.publish(
+    await rabbit.channel.default_exchange.publish(
         Message(
             body='Кто-то выбрал психолога'.encode(encoding='utf-8')),
         routing_key=config.routing_key,
     )
-    queue = rabbit.queue
-    async with queue.iterator() as queue_iter:
-        async for message in queue_iter:
-            async with message.process():
-                print(message.body)
-
     psychologist = await psychologist_repo.delete(choose_psychologist.psychologist_id)
     if psychologist:
         return psychologist

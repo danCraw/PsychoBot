@@ -30,7 +30,7 @@ def get_application() -> FastAPI:
 app = get_application()
 
 
-app.middleware("http")(authenticate)
+# app.middleware("http")(authenticate)
 
 
 if __name__ == "__main__":

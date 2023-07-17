@@ -39,10 +39,11 @@ async def connect_rabbit():
     )
     queue = await channel.declare_queue(config.rabbit_tg_events_queue_name, auto_delete=False)
 
-    rabbit.connection = await rabbit.connection.channel()
+    rabbit.channel = await rabbit.connection.channel()
     rabbit.queue = queue
 
-rabbit = types.SimpleNamespace(connection=None, exchange=None, queue=None)
+
+rabbit = types.SimpleNamespace(channel=None, queue=None, connection=None)
 redis_conn = get_redis()
 database = get_db()
 Base = declarative_base()

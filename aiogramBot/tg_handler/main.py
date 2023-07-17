@@ -1,22 +1,17 @@
 import ast
-import asyncio
 import logging
 import os
 import sys
-from typing import Optional
 
-import aio_pika
-from aio_pika.abc import AbstractIncomingMessage
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
-
-from db.base import rabbit, connect_rabbit
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT)
 
-from aiogramBot.bot.keyboards.inline import KB_SELECT_PSYCHOLOGIST
-from aiogramBot.bot.keyboards.reply import KB_START_BOT, KB_BEGIN, KB_SELECT_PSYCHO
+from aiogramBot.tg_handler.bot.keyboards.inline import KB_SELECT_PSYCHOLOGIST
+from aiogramBot.tg_handler.bot.keyboards.reply import KB_START_BOT, KB_BEGIN, KB_SELECT_PSYCHO
+from core.app_events import start_app, stop_app
 from core.config import config
 from db.repositories.client import ClientRepository
 from db.repositories.meet import MeetRepository
@@ -79,13 +74,11 @@ async def psychologists(message: types.Message):
                          reply_markup=ReplyKeyboardRemove())
     await message.answer('Психологи', reply_markup=ReplyKeyboardRemove())
     for psychologist in psychologists:
-        KB_SELECT_PSYCHOLOGIST.inline_keyboard[0][0].callback_data = str(
-            {'chosen': {'id': psychologist.id, 'n': psychologist.name, 'p': psychologist.meet_price}})
+        KB_SELECT_PSYCHOLOGIST.inline_keyboard[0][0].callback_data = str({'chosen': {'id': psychologist.id, 'n': psychologist.name, 'p': psychologist.meet_price}})
         with open('../app/media/' + psychologist.photo, 'rb') as photo:
             await message.answer_photo(photo,
                                        caption='<b>' + psychologist.name + '. Возраст ' + str(
-                                           psychologist.age) + '. ' + str(
-                                           psychologist.meet_price) + 'р за сеанс.</b>\n' + psychologist.description,
+                                           psychologist.age) + '. ' + str(psychologist.meet_price) + 'р за сеанс.</b>\n' + psychologist.description,
                                        reply_markup=KB_SELECT_PSYCHOLOGIST)
 
 
@@ -93,17 +86,15 @@ async def psychologists(message: types.Message):
 async def save_user_request(call: types.CallbackQuery):
     await call.message.answer('Ваша заявка сохранена, скоро с вами свяжется наш администратор 😊')
     chosen_psychologist = ast.literal_eval(call.data)['chosen']
-    psychologist_id, psychologist_name, psychologists_meet_price = chosen_psychologist['id'], chosen_psychologist['n'], \
-        chosen_psychologist['p']
+    psychologist_id, psychologist_name, psychologists_meet_price = chosen_psychologist['id'], chosen_psychologist['n'],\
+                                                                   chosen_psychologist['p']
     client_repo: ClientRepository = ClientRepository()
     if await client_repo.save_temp_data_to_db(call.message.chat.id, call.message.chat.mention):
-        await bot.send_message(677000194,
-                               'что-то пошло не так, пожалуйста, свяжитесь с администратором. ' + config.ADMIN_TEXT)
+        await bot.send_message(677000194, 'что-то пошло не так, пожалуйста, свяжитесь с администратором. ' + config.ADMIN_TEXT)
     # ids = [792137742, 677000194]
     ids = [677000194]
     for id in ids:
-        await bot.send_message(id,
-                               f'@{call.message.chat.username} оставил заявку на запись к психологу id: {psychologist_id} name: {psychologist_name}')
+        await bot.send_message(id, f'@{call.message.chat.username} оставил заявку на запись к психологу id: {psychologist_id} name: {psychologist_name}')
 
 
 @dp.message_handler(regexp='Выбрать 🔎')
@@ -161,8 +152,7 @@ async def set_tariff(call: types.CallbackQuery):
     else:
         await _set_new_temp_tariff()
     await call.message.answer(
-        'Вы выбрали: ' + selected_tariff.name + '\nЕсли вас всё устраивает, переходите к выбору психолога',
-        reply_markup=KB_SELECT_PSYCHO)
+        'Вы выбрали: ' + selected_tariff.name + '\nЕсли вас всё устраивает, переходите к выбору психолога', reply_markup=KB_SELECT_PSYCHO)
 
 
 @dp.message_handler()
@@ -182,30 +172,5 @@ async def generate_meet_text(meet_id: int):
     return day.day_of_the_week + ': ' + time
 
 
-async def consume_messages():
-    await connect_rabbit()
-    incoming_message: Optional[AbstractIncomingMessage] = await rabbit.queue.get(fail=False)
-    if incoming_message:
-        print(incoming_message.body)
-
-
-async def run_consume_messages():
-    await connect_rabbit()
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(consume_messages())
-    loop.close()
-
-
 if __name__ == '__main__':
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(consume_messages())
-    try:
-        loop.run_forever()
-    finally:
-        loop.close()
-
-    # with ThreadPoolExecutor(max_workers=2) as thread_executor:
-    #     thread_executor.submit(asyncio.run, run_consume_messages())
-    #     thread_executor.submit(executor.start_polling(dp, on_startup=start_app, on_shutdown=stop_app))
+    executor.start_polling(dp, skip_updates=True, on_startup=start_app, on_shutdown=stop_app)
