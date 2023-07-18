@@ -2,7 +2,7 @@ from typing import Type, Union, Dict
 
 import aioredis
 import sqlalchemy
-from core.config import config
+from core.base_config import config
 
 from db.base import redis_conn
 from db.repositories.base import BaseRepository

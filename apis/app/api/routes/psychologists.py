@@ -1,6 +1,6 @@
 import json
 import sys
-from http.client import UNPROCESSABLE_ENTITY
+from http.client import UNPROCESSABLE_ENTITY, OK
 from typing import List
 
 from aio_pika import Message
@@ -8,7 +8,7 @@ from dependency_injector import containers, providers
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, HTTPException, Depends
 
-from core.config import config
+from core.base_config import config
 from db.base import rabbit
 from db.repositories.psychologists import PsychologistRepository
 from db.repositories.psychologists_specializations import PsychologistSpecializationsRepository
@@ -74,15 +74,21 @@ async def update_psychologist(psychologist: PsychologistIn, psychologist_repo: P
 @router.post("/choose/{psychologist_id}")
 @inject
 async def choose_psychologist(choose_psychologist: ChoosePsychologist, psychologist_repo: PsychologistRepository = Depends(
-                              Provide[Container.psychologists])) -> List[PsychologistOut]:
-    await rabbit.channel.default_exchange.publish(
-        Message(
-            body='Кто-то выбрал психолога'.encode(encoding='utf-8')),
-        routing_key=config.routing_key,
-    )
-    psychologist = await psychologist_repo.delete(choose_psychologist.psychologist_id)
+                              Provide[Container.psychologists])) -> int:
+    async def _send_msg_to_admins_tg():
+        tg_link = choose_psychologist.tg_link if choose_psychologist.tg_link else '-'
+        phone_number = choose_psychologist.phone_number if choose_psychologist.phone_number else '-'
+        await rabbit.channel.default_exchange.publish(
+            Message(
+                body=f'Клиент выбрал психолога Имя: {psychologist.name} Телеграм: {psychologist.tg_link}.'
+                     f'\nКонтакты клиента: Телеграм: {tg_link} Номер телефона: {phone_number}'.encode(encoding='utf-8')),
+            routing_key=config.routing_key,
+        )
+
+    psychologist = await psychologist_repo.get(choose_psychologist.psychologist_id)
     if psychologist:
-        return psychologist
+        await _send_msg_to_admins_tg()
+        return OK
     else:
         raise HTTPException(status_code=UNPROCESSABLE_ENTITY, detail="psychologist with the given Id not found")
 

@@ -8,7 +8,7 @@ from fastapi import Request
 from apis.app.api.middlewares import authenticate
 from apis.app.api.routes import api
 from core.app_events import start_app, stop_app
-from core.config import config
+from core.base_config import config
 
 logger = logging.getLogger("uvicorn.error")
 

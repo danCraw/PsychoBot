@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import aioredis
 import aio_pika
 
-from core.config import config
+from core.base_config import config
 
 
 def get_db() -> databases.Database:

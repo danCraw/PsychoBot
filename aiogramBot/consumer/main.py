@@ -7,12 +7,11 @@ import aio_pika
 from aiogram import Bot, Dispatcher
 from aiogram.types import ParseMode
 
+from aiogramBot.bot_config import config
 from db.base import rabbit, connect_rabbit
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT)
-
-from core.config import config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -29,8 +28,8 @@ async def main(loop):
 
 
 async def callback_on_message(msg: aio_pika.IncomingMessage):
-    print(f'[x] Received {msg.body.decode()}')
-    print('[x] Done')
+    for id in config.ADMINS_IDS:
+        await bot.send_message(id, msg.body.decode())
     await msg.ack()
 
 
