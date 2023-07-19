@@ -6,13 +6,14 @@ import sys
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT)
 
-from aiogramBot.psychologists.bot.keyboards.inline import KB_SELECT_PSYCHOLOGIST
-from aiogramBot.psychologists.bot.keyboards.reply import KB_START_BOT, KB_BEGIN, KB_SELECT_PSYCHO
-from core.app_events import start_app, stop_app
-from aiogramBot.bot_config import config
+from psychologists_bot.bot_events import start_bot, stop_bot
+from psychologists_bot.bot.keyboards.inline import KB_SELECT_PSYCHOLOGIST
+from psychologists_bot.bot.keyboards.reply import KB_START_BOT, KB_BEGIN, KB_SELECT_PSYCHO
+from core.bot_config import config
 from db.repositories.client import ClientRepository
 from db.repositories.meet import MeetRepository
 from db.repositories.psychologists import PsychologistRepository
@@ -74,12 +75,15 @@ async def psychologists(message: types.Message):
                          reply_markup=ReplyKeyboardRemove())
     await message.answer('Психологи', reply_markup=ReplyKeyboardRemove())
     for psychologist in psychologists:
-        KB_SELECT_PSYCHOLOGIST.inline_keyboard[0][0].callback_data = str({'chosen': {'id': psychologist.id, 'n': psychologist.name, 'p': psychologist.meet_price}})
-        with open('../app/media/' + psychologist.photo, 'rb') as photo:
-            await message.answer_photo(photo,
-                                       caption='<b>' + psychologist.name + '. Возраст ' + str(
-                                           psychologist.age) + '. ' + str(psychologist.meet_price) + 'р за сеанс.</b>\n' + psychologist.description,
-                                       reply_markup=KB_SELECT_PSYCHOLOGIST)
+        try:
+            KB_SELECT_PSYCHOLOGIST.inline_keyboard[0][0].callback_data = str({'chosen': {'id': psychologist.id, 'n': psychologist.name, 'p': psychologist.meet_price}})
+            with open('/media/' + psychologist.photo, 'rb') as photo:
+                await message.answer_photo(photo,
+                                           caption='<b>' + psychologist.name + '. Возраст ' + str(
+                                               psychologist.age) + '. ' + str(psychologist.meet_price) + 'р за сеанс.</b>\n' + psychologist.description,
+                                           reply_markup=KB_SELECT_PSYCHOLOGIST)
+        except FileNotFoundError as e:
+            logging.warning(psychologist.tg_link, psychologist.name, e)
 
 
 @dp.callback_query_handler(regexp='chosen')
@@ -171,4 +175,4 @@ async def generate_meet_text(meet_id: int):
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True, on_startup=start_app, on_shutdown=stop_app)
+    executor.start_polling(dp, skip_updates=True, on_startup=start_bot, on_shutdown=stop_bot)

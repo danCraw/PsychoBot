@@ -3,15 +3,15 @@ import logging
 import os
 import sys
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(ROOT)
+
 import aio_pika
 from aiogram import Bot, Dispatcher
 from aiogram.types import ParseMode
 
-from aiogramBot.bot_config import config
-from db.base import rabbit, connect_rabbit
-
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(ROOT)
+from core.bot_config import config
+from rabbit.base import rabbit, connect_rabbit
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,7 +36,6 @@ async def callback_on_message(msg: aio_pika.IncomingMessage):
 if __name__ == '__main__':
     loop = asyncio.new_event_loop()
     connection = loop.run_until_complete(main(loop))
-
     try:
         loop.run_forever()
     finally:

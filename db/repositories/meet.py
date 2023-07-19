@@ -2,7 +2,7 @@ from typing import Type, List
 
 import sqlalchemy
 
-from db.base import redis_conn
+from redis_.base import redis_conn
 from db.repositories.base import BaseRepository
 from db.tables.meet import Meet
 from models.meet import MeetOut, MeetIn

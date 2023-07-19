@@ -1,0 +1,15 @@
+FROM python:3.10
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install libpq-dev python3-dev -y
+
+COPY consumer_bot/requirements.txt ./requirements.txt
+RUN pip install -r ./requirements.txt
+
+COPY core /app/core
+COPY rabbit /app/rabbit
+COPY consumer_bot /app/consumer_bot
+WORKDIR /app
+
+CMD ["python3", "-u", "consumer_bot/main.py"]

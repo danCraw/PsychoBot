@@ -2,14 +2,14 @@ from typing import Type, Union, Dict
 
 import aioredis
 import sqlalchemy
-from core.base_config import config
 
-from db.base import redis_conn
+from core.base_config import config
 from db.repositories.base import BaseRepository
 from db.repositories.tariff import TariffRepository
 from db.tables.client import Client
 from models.base import BaseIdSchema, BaseSchema
 from models.client import ClientOut, ClientIn, ClientBase
+from redis_.base import redis_conn
 
 
 class ClientRepository(BaseRepository):

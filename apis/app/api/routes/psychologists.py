@@ -9,7 +9,7 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, HTTPException, Depends
 
 from core.base_config import config
-from db.base import rabbit
+from rabbit.base import rabbit
 from db.repositories.psychologists import PsychologistRepository
 from db.repositories.psychologists_specializations import PsychologistSpecializationsRepository
 from db.repositories.specializations import SpecializationRepository

@@ -15,7 +15,7 @@ class BaseConfig(BaseSettings):
 
     # Database config
     DATABASE_URL: Optional[PostgresDsn] = os.environ.get(
-        "DATABASE_URL", "postgresql://postgresql:postgresql@0.0.0.0:5432/config"
+        "DATABASE_URL", "postgresql://postgresql:postgresql@localhost:5432/config"
     )
     DB_MIN_SIZE: int = 2
     DB_MAX_SIZE: int = 15
@@ -25,7 +25,7 @@ class BaseConfig(BaseSettings):
     EXPIRE_TIME = 1200
 
     # Rabbit config
-    rabbit_host: str = 'localhost'
+    rabbit_host: str = '192.168.8.80'
     rabbit_port: int = 5672
     rabbit_user: str = 'psycho'
     rabbit_secret: str = 'password'

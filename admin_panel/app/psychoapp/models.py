@@ -13,6 +13,7 @@ class Tariff(models.Model):
         verbose_name_plural = 'Тарифы'
 
 
+
 class Psychologist(models.Model):
     name = models.CharField('имя', max_length=30)
     tg_link = models.CharField('ссылка на летеграм', max_length=30, default='')

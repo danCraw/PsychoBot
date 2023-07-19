@@ -1,13 +1,15 @@
 import logging
-import time
+import os
+import sys
 
 import uvicorn
 from fastapi import FastAPI
-from fastapi import Request
 
-from apis.app.api.middlewares import authenticate
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(ROOT)
+
 from apis.app.api.routes import api
-from core.app_events import start_app, stop_app
+from apis.app.app_events import start_app, stop_app
 from core.base_config import config
 
 logger = logging.getLogger("uvicorn.error")
@@ -28,7 +30,6 @@ def get_application() -> FastAPI:
 
 
 app = get_application()
-
 
 # app.middleware("http")(authenticate)
 
