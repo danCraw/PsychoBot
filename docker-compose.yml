@@ -88,3 +88,16 @@ services:
 #    links:
 #      - redis
 #      - db
+
+  admin_panel:
+    build:
+      context: .
+      dockerfile: Dockerfile_admin_panel
+    ports:
+      - 8000:8000
+    command: bash -c "python3 manage.py runserver"
+    restart: on-failure
+    depends_on:
+      - db
+    links:
+      - db

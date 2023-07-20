@@ -15,7 +15,7 @@ class BaseConfig(BaseSettings):
 
     # Database config
     DATABASE_URL: Optional[PostgresDsn] = os.environ.get(
-        "DATABASE_URL", "postgresql://postgresql:postgresql@localhost:5432/config"
+        "DATABASE_URL", "postgresql://postgresql:postgresql@192.168.8.80:5432/config"
     )
     DB_MIN_SIZE: int = 2
     DB_MAX_SIZE: int = 15
