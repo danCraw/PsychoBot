@@ -13,7 +13,7 @@ from rabbit.base import rabbit
 from db.repositories.psychologists import PsychologistRepository
 from db.repositories.psychologists_specializations import PsychologistSpecializationsRepository
 from db.repositories.specializations import SpecializationRepository
-from models.psychologist import PsychologistIn, PsychologistOut, ChoosePsychologist, PsychologistsList
+from models.psychologist import PsychologistIn, PsychologistOut, ChoosePsychologist
 
 router = APIRouter()
 
@@ -29,14 +29,14 @@ class Container(containers.DeclarativeContainer):
 
 @router.get("/")
 @inject
-async def psychologists_list(psychologists_list: PsychologistsList, psychologist_repo: PsychologistRepository = Depends(Provide[Container.psychologists]),
+async def psychologists_list(psychologist_repo: PsychologistRepository = Depends(Provide[Container.psychologists]),
                              psychologists_specializations_repo: PsychologistSpecializationsRepository = Depends(
                                  Provide[Container.psychologists_specializations]),
                              specializations_repo: SpecializationRepository = Depends(
                                  Provide[Container.specializations])
                              ) -> List[PsychologistOut]:
-    psychologist = await psychologist_repo.approved_psychologists(psychologists_list.start, psychologists_list.amount,
-                                                                  specializations_repo._table, psychologists_specializations_repo._table)
+    psychologist = await psychologist_repo.psychologists_list(specializations_repo._table,
+                                                              psychologists_specializations_repo._table)
     return psychologist
 
 
