@@ -9,7 +9,6 @@ RUN pip install -r ./requirements.txt
 
 COPY core /app/core
 COPY rabbit /app/rabbit
-COPY redis_ /app/redis
 COPY db /app/db
 COPY /media /media
 COPY models /app/models

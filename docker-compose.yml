@@ -1,27 +1,6 @@
 version: '3.9'
 
 services:
-  app:
-    build:
-      context: .
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
-    ports:
-      - 8000:8000
-    volumes:
-      - ./app:/app
-      - ./data/web:/vol/web
-    environment:
-      - SECRET_KEY=devsecretkey
-      - DEBUG=1
-      - DB_HOST=db
-      - DB_NAME=config
-      - DB_USER=postgresql
-      - DB_PASS=postgresql
-    depends_on:
-      - db
-
   bot_consumer:
     build:
       context: .
@@ -40,15 +19,15 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5672:5672"
-
-  redis:
-    build:
-      context: redis_
-      dockerfile: Dockerfile
-    volumes:
-      - "./tmp/redis_data:/data"
-    ports:
-      - "6379:6379"
+#
+#  redis:
+#    build:
+#      context: redis_
+#      dockerfile: Dockerfile
+#    volumes:
+#      - "./tmp/redis_data:/data"
+#    ports:
+#      - "6379:6379"
 
   db:
     image: postgres:13-alpine
@@ -69,11 +48,9 @@ services:
     restart: on-failure
     depends_on:
       - rabbit
-      - redis
       - db
     links:
       - rabbit
-      - redis
       - db
 
 
