@@ -1,54 +1,54 @@
 version: '3.9'
 
 services:
-#  app:
-#    build:
-#      context: .
-#    command: >
-#      sh -c "python manage.py migrate &&
-#             python manage.py runserver 0.0.0.0:8000"
-#    ports:
-#      - 8000:8000
-#    volumes:
-#      - ./app:/app
-#      - ./data/web:/vol/web
-#    environment:
-#      - SECRET_KEY=devsecretkey
-#      - DEBUG=1
-#      - DB_HOST=db
-#      - DB_NAME=config
-#      - DB_USER=postgresql
-#      - DB_PASS=postgresql
-#    depends_on:
-#      - db
+  app:
+    build:
+      context: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    volumes:
+      - ./app:/app
+      - ./data/web:/vol/web
+    environment:
+      - SECRET_KEY=devsecretkey
+      - DEBUG=1
+      - DB_HOST=db
+      - DB_NAME=config
+      - DB_USER=postgresql
+      - DB_PASS=postgresql
+    depends_on:
+      - db
 
-#  bot_consumer:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile_consumer_bot
-#    ports:
-#      - "1097:1097"
-#    restart: on-failure
-#    depends_on:
-#      - rabbit
-#    links:
-#      - rabbit
-#
-#  rabbit:
-#    build:
-#      context: rabbit
-#      dockerfile: Dockerfile
-#    ports:
-#      - "5672:5672"
+  bot_consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile_consumer_bot
+    ports:
+      - "1097:1097"
+    restart: on-failure
+    depends_on:
+      - rabbit
+    links:
+      - rabbit
 
-#  redis:
-#    build:
-#      context: redis_
-#      dockerfile: Dockerfile
-#    volumes:
-#      - "./tmp/redis_data:/data"
-#    ports:
-#      - "6379:6379"
+  rabbit:
+    build:
+      context: rabbit
+      dockerfile: Dockerfile
+    ports:
+      - "5672:5672"
+
+  redis:
+    build:
+      context: redis_
+      dockerfile: Dockerfile
+    volumes:
+      - "./tmp/redis_data:/data"
+    ports:
+      - "6379:6379"
 
   db:
     image: postgres:13-alpine
@@ -58,36 +58,36 @@ services:
       - POSTGRES_DB=config
       - POSTGRES_USER=postgresql
       - POSTGRES_PASSWORD=postgresql
-#
-#  psychologists_apis:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile_apis
-#    ports:
-#      - 8001:8001
-#    command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8001"
-#    restart: on-failure
-#    depends_on:
-#      - rabbit
-#      - redis
-#      - db
-#    links:
-#      - rabbit
-#      - redis
-#      - db
+
+  psychologists_apis:
+    build:
+      context: .
+      dockerfile: Dockerfile_apis
+    ports:
+      - 8001:8001
+    command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8001"
+    restart: on-failure
+    depends_on:
+      - rabbit
+      - redis
+      - db
+    links:
+      - rabbit
+      - redis
+      - db
 
 
-#  psychologists_bot:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile_psychologists_bot
-#    restart: on-failure
-#    depends_on:
-#      - redis
-#      - db
-#    links:
-#      - redis
-#      - db
+  psychologists_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile_psychologists_bot
+    restart: on-failure
+    depends_on:
+      - redis
+      - db
+    links:
+      - redis
+      - db
 
   admin_panel:
     build:
