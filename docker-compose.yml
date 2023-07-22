@@ -60,10 +60,8 @@ services:
       dockerfile: Dockerfile_psychologists_bot
     restart: on-failure
     depends_on:
-      - redis
       - db
     links:
-      - redis
       - db
 
   admin_panel:
