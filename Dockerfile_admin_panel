@@ -16,12 +16,12 @@ COPY admin_panel /app/admin_panel
 
 WORKDIR /app/admin_panel/app
 
-RUN python manage.py makemigrations --noinput
-RUN python manage.py migrate --noinput
+# RUN python manage.py makemigrations --noinput
+# RUN python manage.py migrate --noinput
 
 # Create superuser during image build
-RUN python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); \
-User.objects.filter(email='admin@gmail.com').exists() or \
-User.objects.create_superuser('admin', 'admin@gmail.com', 'admin')"
+# RUN python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); \
+# User.objects.filter(email='admin@gmail.com').exists() or \
+# User.objects.create_superuser('admin', 'admin@gmail.com', 'admin')"
 
 EXPOSE 8000

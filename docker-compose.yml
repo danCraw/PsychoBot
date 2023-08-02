@@ -52,7 +52,8 @@ services:
     links:
       - rabbit
       - db
-
+    volumes:
+      - media:/media
 
   psychologists_bot:
     build:
@@ -63,6 +64,9 @@ services:
       - db
     links:
       - db
+    volumes:
+      - media:/media
+
 
   admin_panel:
     build:
@@ -76,3 +80,8 @@ services:
       - db
     links:
       - db
+    volumes:
+      - media:/media
+
+volumes:
+  media:
