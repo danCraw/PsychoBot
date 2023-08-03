@@ -1,5 +1,7 @@
 from typing import Optional
 
+from pydantic import validator
+
 from models.base import BaseSchema
 
 
@@ -21,6 +23,10 @@ class PsychologistIn(PsychologistBase):
 
 class PsychologistOut(PsychologistBase):
     id: int
+
+    @validator("photo", always=True)
+    def photo_path(cls, v):
+        return "".join(['/media/', v])
 
 
 class ChoosePsychologist(BaseSchema):
