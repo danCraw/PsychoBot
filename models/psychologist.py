@@ -21,24 +21,13 @@ class PsychologistIn(PsychologistBase):
     id: Optional[int]
 
 
-class PsychologistOut(PsychologistBase, extra='allow'):
+class PsychologistOut(PsychologistBase):
     id: int
     photo: Union[str]
-    content: Optional[str]
 
     @validator("photo", always=True)
     def photo_path(cls, v):
         return "".join(['/media/', v]) if '/media/' not in v else v
-
-
-    @validator("content", always=True)
-    @classmethod
-    def content_field(cls, v, values):
-        if v is None:
-            with open(values['photo'], 'rb') as photo:
-                return str(photo.read())
-        else:
-            return v
 
 
 class ChoosePsychologist(BaseSchema):

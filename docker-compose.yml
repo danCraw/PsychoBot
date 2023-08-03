@@ -67,19 +67,10 @@ services:
     volumes:
       - media:/media
 
-
-  admin_panel:
-    build:
-      context: .
-      dockerfile: Dockerfile_admin_panel
+  nginx:
+    image: nginx:latest
     ports:
-      - 8000:8000
-    command: python3 manage.py runserver 0.0.0.0:8000
-    restart: on-failure
-    depends_on:
-      - db
-    links:
-      - db
+      - "8080:80"
     volumes:
       - media:/media
 
