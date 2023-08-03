@@ -35,9 +35,9 @@ async def psychologists_list(psychologist_repo: PsychologistRepository = Depends
                              specializations_repo: SpecializationRepository = Depends(
                                  Provide[Container.specializations])
                              ) -> List[PsychologistOut]:
-    psychologist = await psychologist_repo.psychologists_list(specializations_repo._table,
+    psychologists = await psychologist_repo.psychologists_list(specializations_repo._table,
                                                               psychologists_specializations_repo._table)
-    return psychologist
+    return psychologists
 
 
 @router.get("/{psychologist_id}")
