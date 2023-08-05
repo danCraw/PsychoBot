@@ -19,15 +19,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5672:5672"
-#
-#  redis:
-#    build:
-#      context: redis_
-#      dockerfile: Dockerfile
-#    volumes:
-#      - "./tmp/redis_data:/data"
-#    ports:
-#      - "6379:6379"
 
   db:
     image: postgres:13-alpine
@@ -59,6 +50,22 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_psychologists_bot
+    restart: on-failure
+    depends_on:
+      - db
+    links:
+      - db
+    volumes:
+      - media:/media
+
+
+  admin_panel:
+    build:
+      context: .
+      dockerfile: Dockerfile_admin_panel
+    ports:
+      - 8000:8000
+    command: python3 manage.py runserver 0.0.0.0:8000
     restart: on-failure
     depends_on:
       - db
