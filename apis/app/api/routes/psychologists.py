@@ -6,6 +6,7 @@ from aio_pika import Message
 from dependency_injector import containers, providers
 from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import FileResponse
 
 from core.base_config import config
 from db.repositories.psychologists import PsychologistRepository
@@ -124,6 +125,11 @@ async def delete_psychologist(psychologist_id: int, psychologist_repo: Psycholog
     else:
         raise HTTPException(status_code=UNPROCESSABLE_ENTITY, detail="psychologist with the given Id not found")
 
+
+@router.get("/media/{image_path}")
+@inject
+async def media_file(image_path: str):
+    return FileResponse('/media/' + image_path)
 
 container = Container()
 container.wire(modules=[sys.modules[__name__]])
