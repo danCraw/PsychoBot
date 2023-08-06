@@ -74,12 +74,5 @@ services:
     volumes:
       - media:/media
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "8001:80"
-    volumes:
-      - media:/media
-
 volumes:
   media:

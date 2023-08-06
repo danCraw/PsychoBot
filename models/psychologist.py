@@ -25,10 +25,6 @@ class PsychologistOut(PsychologistBase):
     id: int
     photo: Union[str]
 
-    @validator("photo", always=True)
-    def photo_path(cls, v):
-        return "".join(['/media/', v]) if '/media/' not in v else v
-
 
 class ChoosePsychologist(BaseSchema):
     psychologist_id: int
