@@ -40,15 +40,15 @@ async def psychologists_list(psychologist_repo: PsychologistRepository = Depends
     return psychologists
 
 
-# @router.get("/{psychologist_id}")
-# @inject
-# async def one_psychologist(psychologist_id: int, psychologist_repo: PsychologistRepository = Depends(
-#                            Provide[Container.psychologists])) -> PsychologistOut:
-#     psychologist = await psychologist_repo.get(psychologist_id)
-#     if psychologist:
-#         return psychologist
-#     else:
-#         raise HTTPException(status_code=UNPROCESSABLE_ENTITY, detail="psychologist with the given Id not found")
+@router.get("/one/{psychologist_id}")
+@inject
+async def one_psychologist(psychologist_id: int, psychologist_repo: PsychologistRepository = Depends(
+                           Provide[Container.psychologists])) -> PsychologistOut:
+    psychologist = await psychologist_repo.get(psychologist_id)
+    if psychologist:
+        return psychologist
+    else:
+        raise HTTPException(status_code=UNPROCESSABLE_ENTITY, detail="psychologist with the given Id not found")
 
 
 @router.post("/")
