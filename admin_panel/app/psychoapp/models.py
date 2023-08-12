@@ -46,7 +46,7 @@ class Specialization(models.Model):
 
 
 class Client(models.Model):
-    tg_id = models.IntegerField('id телеграмм аккаунта клиента', primary_key=True)
+    tg_id = models.CharField('id телеграмм аккаунта клиента', max_length=30, primary_key=True)
     name = models.CharField('имя', max_length=30)
     tariff = models.ForeignKey(Tariff, on_delete=models.CASCADE, null=True, blank=True, default=None)
     remaining_meets = models.IntegerField('cеансов осталось', default=0)

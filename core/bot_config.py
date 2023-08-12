@@ -1,20 +1,17 @@
-import os
 from typing import Optional
-
-from pydantic import PostgresDsn
 
 from core.base_config import BaseConfig
 
 
 class BotConfig(BaseConfig):
-    ADMINS_IDS = [677000194]
+    ADMINS_IDS = [677000194, 792137742]
 
     BOT_TOKEN = '5551831184:AAF1NUw2ojoiwIWeNEFaXEkYXEGvH7sdI2g'
 
     YOTOKEN = '381764678:TEST:40164'
 
     # text const
-    ADMIN_TEXT = 'Администратор\nhttps://t.me//kirili13\nНомер телефона: 8 (999) 700-91-92'
+    ADMIN_TEXT = 'Администратор\nhttps://t.me//kirili13\nНомер телефона: 8 (910) 225-12-80'
 
 
 class DevConfig(BotConfig):

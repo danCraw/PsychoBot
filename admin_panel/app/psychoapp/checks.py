@@ -16,7 +16,7 @@ def client_already_have_this_meet(client_id, meet_id) -> bool:
         return False
 
 
-def client_exist(client_id: int):
+def client_exist(client_id: str):
     try:
         Client.objects.get(tg_id=client_id)
         return True
