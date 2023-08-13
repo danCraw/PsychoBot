@@ -67,7 +67,7 @@ async def begin(message: types.Message):
         reply_markup=KB_BEGIN)
 
 
-@dp.message_handler(regexp='Выбрать психолога')
+@dp.message_handler(regexp='Выбрать 🔎')
 async def psychologists(message: types.Message):
     psychologist_repo: PsychologistRepository = PsychologistRepository()
     psychologists = await psychologist_repo.list()
@@ -97,17 +97,6 @@ async def save_user_request(call: types.CallbackQuery):
                                f'К сожалению, в вашем аккаунте не указана ссылка на ваш профиль, для записи к выбранному психологу, свяжитесь с нашим администратором.\n{config.ADMIN_TEXT}')
     for id in config.ADMINS_IDS:
         await bot.send_message(id, f'@{call.message.chat.username} оставил заявку на запись к психологу id: {psychologist_id} name: {psychologist_name}')
-
-
-@dp.message_handler(regexp='Выбрать 🔎')
-async def tariffs(message: types.Message):
-    tariffs_repo: TariffRepository = TariffRepository()
-    tariffs = await tariffs_repo.list()
-    kb_tariffs = InlineKeyboardMarkup(len(tariffs))
-    for tariff in tariffs:
-        kb_tariffs.add(
-            InlineKeyboardButton(tariff.name, callback_data=str({'set_tariff': {'name': tariff.name}})))
-    await message.answer('Выберете количество сеансов в неделю', reply_markup=kb_tariffs)
 
 
 async def client_meets(message: types.Message):
