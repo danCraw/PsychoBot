@@ -1,3 +1,4 @@
 aio-pika==9.1.4
 aiogram==2.24
 pydantic==1.10.2
+python-dotenv==1.0.0

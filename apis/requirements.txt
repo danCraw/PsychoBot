@@ -50,3 +50,4 @@ uvloop==0.17.0
 watchfiles==0.18.0
 websockets==10.4
 dependency-injector==4.41.0
+python-dotenv==1.0.0

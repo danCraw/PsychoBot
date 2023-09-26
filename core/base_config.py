@@ -1,7 +1,10 @@
 import os
 from typing import Optional
+from dotenv import load_dotenv
 
 from pydantic import BaseSettings, PostgresDsn
+
+load_dotenv()
 
 
 class BaseConfig(BaseSettings):
@@ -14,8 +17,14 @@ class BaseConfig(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Database config
+    DB_NAME: str = os.environ.get("DB_NAME")
+    DB_HOST: str = os.environ.get("DB_HOST")
+    DB_PORT: str = os.environ.get("DB_PORT")
+    DB_USER: str = os.environ.get("DB_USER")
+    DB_PASSWORD: str = os.environ.get("DB_PASSWORD")
     DATABASE_URL: Optional[PostgresDsn] = os.environ.get(
-        "DATABASE_URL", "postgresql://postgresql:postgresql@192.168.8.80:5432/config"
+        "DATABASE_URL",
+        "postgresql+asyncpg://" + DB_USER + ":" + DB_PASSWORD + "@" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME
     )
     DB_MIN_SIZE: int = 2
     DB_MAX_SIZE: int = 15
@@ -25,7 +34,7 @@ class BaseConfig(BaseSettings):
     EXPIRE_TIME = 1200
 
     # Rabbit config
-    rabbit_host: str = '192.168.8.80'
+    rabbit_host: str = os.environ.get("RABBIT_HOST")
     rabbit_port: int = 5672
     rabbit_user: str = 'psycho'
     rabbit_secret: str = 'password'
