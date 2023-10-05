@@ -30,6 +30,8 @@ services:
       - POSTGRES_PASSWORD=postgresql
 
   psychologists_apis:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile_apis

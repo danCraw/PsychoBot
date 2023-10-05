@@ -27,20 +27,20 @@ def get_application() -> FastAPI:
 
     application.include_router(api.psychologists_router, prefix=config.API_V1_STR)
 
+    origins = ["*"]
+
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     return application
 
 
 app = get_application()
-
-origins = ["*"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 if __name__ == "__main__":
