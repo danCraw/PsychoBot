@@ -2,6 +2,8 @@ version: '3.9'
 
 services:
   bot_consumer:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile_consumer_bot
@@ -49,6 +51,8 @@ services:
       - media:/media
 
   psychologists_bot:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile_psychologists_bot
@@ -62,6 +66,8 @@ services:
 
 
   admin_panel:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile_admin_panel
